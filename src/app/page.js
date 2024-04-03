@@ -1,6 +1,6 @@
 "use client";
 import styles from "./page.module.css";
-import {Button, Center, Group, Loader, Table, Tabs} from "@mantine/core";
+import {Button, Center, Group, Loader, Pagination, Table, Tabs} from "@mantine/core";
 import {useEffect, useState} from "react";
 import {apiURL} from "@/app/api/api";
 
@@ -17,12 +17,35 @@ export default function Home() {
   const [selectModel,setModel] = useState(carModels[0].name);
   const [listCar, setListCar] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [numOfResults,setNumOfResults] = useState(0);
+  const [page,setPage] = useState(1);
+  const [pageSize,setPageSize] = useState(15);
+    // useEffect(() => {
+    //     const authorize = async () => {
+    //         setIsLoading(true);
+    //         await fetch(`${apiURL}/catalog/datasets/all-vehicles-model/records?select=model&group_by=model&limit=120&refine=make%3A%22Volvo%22`,
+    //             {
+    //                 method:"GET",
+    //                 headers:{
+    //                     "apikey": "TestCar",
+    //                     "Content-Type": "application/json"
+    //                 }
+    //             })
+    //             .then((res) => res.json())
+    //             .then((data) => {
+    //
+    //             })
+    //     }
+    //     authorize();
+    // }, []);
+
   useEffect(()=>{
       const fetchData = async () => {
           setIsLoading(true);
-          await fetch(`${apiURL}/catalog/datasets/all-vehicles-model/records?select=model%2Cyear&limit=100&refine=make%3A%22${selectModel ? selectModel : "Volvo"}%22`)
+          await fetch(`${apiURL}/catalog/datasets/all-vehicles-model/records?select=model&group_by=model&limit=200&offset=0&refine=make%3A%22${selectModel ? selectModel : "Volvo"}%22`)
               .then((res) => res.json())
               .then((data) => {
+                  setNumOfResults(data.results.length);
                   setListCar(data.results);
                   setIsLoading(false);
               })
@@ -30,9 +53,16 @@ export default function Home() {
       fetchData();
   },[selectModel])
 
+
+
   return (
     <main className={styles.main}>
-        <Tabs value={selectModel} onChange={setModel} style={{width:"100%"}}>
+        Кол-во результатов: {numOfResults}
+        <Tabs value={selectModel} onChange={(value) => {
+            setModel(value);
+            if(page < numOfResults / pageSize)
+                return setPage(1);
+        }} style={{width:"100%"}}>
             <Tabs.List>
                 {
                     carModels.map((el,i) =>{
@@ -58,7 +88,7 @@ export default function Home() {
                                 </Table.Thead>
                                 <Table.Tbody>
                                     {
-                                        !listCar ? null : listCar.map((el,i) =>{
+                                        !listCar ? null : listCar.slice(pageSize * (page - 1),pageSize * page).map((el,i) =>{
                                             return(
                                                 <Table.Tr key={i}>
                                                     <Table.Td>{el.model}</Table.Td>
@@ -74,7 +104,8 @@ export default function Home() {
                 })
             }
         </Tabs>
-
+        <Pagination value={page} total={numOfResults / pageSize} onChange={setPage}/>
     </main>
   );
 }
+
