@@ -1,95 +1,80 @@
-import Image from "next/image";
+"use client";
 import styles from "./page.module.css";
+import {Button, Center, Group, Loader, Table, Tabs} from "@mantine/core";
+import {useEffect, useState} from "react";
+import {apiURL} from "@/app/api/api";
 
+const carModels = [
+    {
+        "id":0,
+        "name":"Volvo"
+    },
+    {
+        "id": 1,
+        "name":"Ford"
+    }]
 export default function Home() {
+  const [selectModel,setModel] = useState(carModels[0].name);
+  const [listCar, setListCar] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(()=>{
+      const fetchData = async () => {
+          setIsLoading(true);
+          await fetch(`${apiURL}/catalog/datasets/all-vehicles-model/records?select=model%2Cyear&limit=100&refine=make%3A%22${selectModel ? selectModel : "Volvo"}%22`)
+              .then((res) => res.json())
+              .then((data) => {
+                  setListCar(data.results);
+                  setIsLoading(false);
+              })
+      }
+      fetchData();
+  },[selectModel])
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+        <Tabs value={selectModel} onChange={setModel} style={{width:"100%"}}>
+            <Tabs.List>
+                {
+                    carModels.map((el,i) =>{
+                        return(
+                            <Tabs.Tab value={el.name}>{el.name}</Tabs.Tab>
+                        )
+                    })
+                }
+            </Tabs.List>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+            {
+                isLoading ? <Center h={100}><Loader size={30}/></Center>  :
+                carModels.map((el,i) =>{
+                    return(
+                        <Tabs.Panel value={el.name}>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Модель</Table.Th>
+                                        <Table.Th>Год</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {
+                                        !listCar ? null : listCar.map((el,i) =>{
+                                            return(
+                                                <Table.Tr key={i}>
+                                                    <Table.Td>{el.model}</Table.Td>
+                                                    <Table.Td>{el.year}</Table.Td>
+                                                </Table.Tr>
+                                            )
+                                        })
+                                    }
+                                </Table.Tbody>
+                            </Table>
+                        </Tabs.Panel>
+                    )
+                })
+            }
+        </Tabs>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
     </main>
   );
 }
