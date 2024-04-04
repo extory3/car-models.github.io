@@ -3,7 +3,7 @@ import styles from "./page.module.css";
 import {Button, Center, Group, Loader, Pagination, Table, Tabs} from "@mantine/core";
 import {useEffect, useState} from "react";
 import {apiURL} from "@/app/api/api";
-
+require('dotenv').config()
 const carModels = [
     {
         "id":0,
@@ -20,26 +20,22 @@ export default function Home() {
   const [numOfResults,setNumOfResults] = useState(0);
   const [page,setPage] = useState(1);
   const [pageSize,setPageSize] = useState(15);
-    // useEffect(() => {
-    //     const authorize = async () => {
-    //         setIsLoading(true);
-    //         await fetch(`${apiURL}/catalog/datasets/all-vehicles-model/records?select=model&group_by=model&limit=120&refine=make%3A%22Volvo%22`,
-    //             {
-    //                 method:"GET",
-    //                 headers:{
-    //                     "apikey": "TestCar",
-    //                     "Content-Type": "application/json"
-    //                 }
-    //             })
-    //             .then((res) => res.json())
-    //             .then((data) => {
-    //
-    //             })
-    //     }
-    //     authorize();
-    // }, []);
+  const [tournament, setTournament] = useState(null);
+
+    useEffect(() => {
+        const getTournaments = async () => {
+            await fetch(process.env.API_URL,{mode:"no-cors"})
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log(data)
+                })
+        }
+        getTournaments();
+    }, []);
 
   useEffect(()=>{
+      // console.log(process.env.NEXT_PUBLIC_API_URL)
+
       const fetchData = async () => {
           setIsLoading(true);
           await fetch(`${apiURL}/catalog/datasets/all-vehicles-model/records?select=model&group_by=model&limit=200&offset=0&refine=make%3A%22${selectModel ? selectModel : "Volvo"}%22`)
