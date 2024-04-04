@@ -22,17 +22,6 @@ export default function Home() {
   const [pageSize,setPageSize] = useState(15);
   const [tournament, setTournament] = useState(null);
 
-    useEffect(() => {
-        const getTournaments = async () => {
-            await fetch(process.env.API_URL,{mode:"no-cors"})
-                .then((res) => res.json())
-                .then((data) => {
-                    console.log(data)
-                })
-        }
-        getTournaments();
-    }, []);
-
   useEffect(()=>{
       // console.log(process.env.NEXT_PUBLIC_API_URL)
 
